@@ -1,0 +1,25 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+path='C:/Users/wangpeng/Desktop/电商用户行为预测/'
+
+train_read=pd.read_csv(path+'train.csv')
+test_read=pd.read_csv(path+'test.csv')
+
+data_event_type=np.array(train_read['event_type'])
+
+view=0;cart=0;purchase=0;remove=0
+for i in range(0,len(data_event_type)):
+    if(data_event_type[i]=='view'):
+        view+=1
+    if(data_event_type[i]=='cart'):
+        cart+=1
+    if(data_event_type[i]=='purchase'):
+        purchase+=1
+    if(data_event_type[i]=='remove_from_cart'):
+        remove+=1
+labels='view','cart','purhase','remove_from_cart'
+fraces=[view,cart,purchase,remove]
+plt.pie(x=fraces,labels=labels,autopct='%0f%%')
+plt.show()
