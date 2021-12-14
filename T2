@@ -1,0 +1,53 @@
+
+import pandas as pd
+import numpy as np
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+plt.rc('font', family='SimHei', size=13)
+
+import os,gc,re,warnings,sys
+warnings.filterwarnings("ignore")
+
+
+def get_all_click_sample(data_path, sample_nums=10000):
+    """
+        训练集中采样一部分数据调试
+        data_path: 原数据的存储路径
+        sample_nums: 采样数目（这里由于机器的内存限制，可以采样用户做）
+    """
+    all_click = pd.read_csv(data_path + 'train.csv')
+    all_user_ids = all_click.user_id.unique()
+
+    sample_user_ids = np.random.choice(all_user_ids, size=sample_nums, replace=False)
+    all_click = all_click[all_click['user_id'].isin(sample_user_ids)]
+
+    all_click = all_click.drop_duplicates((['user_id', 'product_id', 'event_time']))
+    return all_click
+
+data_path = 'C:/Users/wangpeng/Desktop/电商用户行为预测/'
+trn_click = get_all_click_sample(data_path, sample_nums=10000)
+tst_click = pd.read_csv(data_path+'test.csv')
+
+#计算用户与商品交互的次数，并添加新的一列count
+trn_click['click_cnts'] = trn_click.groupby(['user_id'])['event_time'].transform('count')
+tst_click['click_cnts'] = tst_click.groupby(['user_id'])['event_time'].transform('count')
+
+#训练集中的用户数量为10000
+trn_click.user_id.nunique()
+trn_click.groupby('user_id')['product_id'].count().min()  # 训练集里面每个用户至少点击了一个商品
+plt.figure()
+#plt.figure(figsize=(15, 20))
+i = 1
+
+for col in ['event_time', 'product_id', 'brand',
+            'price', 'user_id', ]:
+    plot_envs = plt.subplot(5,1, i)
+    i += 1
+    v = trn_click[col].value_counts().reset_index()[:10]
+    fig = sns.barplot(x=v['index'], y=v[col])
+    for item in fig.get_xticklabels():
+        item.set_rotation(90)
+    plt.title(col)
+plt.tight_layout()
+plt.show()
